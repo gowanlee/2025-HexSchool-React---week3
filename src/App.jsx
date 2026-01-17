@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 import './assets/style.css';
@@ -50,21 +50,32 @@ function App() {
     }
   }
 
-  // 串接登入驗證 API
-  const checkLogin = async() => {
-    try {
-      // 讀取 cookie
-      const token = document.cookie
-        .split(';')
-        .find((row) => row.startsWith('hexToken='))
-        ?.split('=')[1];
-      axios.defaults.headers.common['Authorization'] = token; // 修改實體建立時所指派的預設配置（登入成功後，API請求都會自動帶上token）
+  // 初始化搭配useEffect串接登入驗證 API
+  useEffect(() => {
+    // 讀取 cookie
+    const token = document.cookie
+      .split(';')
+      .find((row) => row.startsWith('hexToken='))
+      ?.split('=')[1];
 
-      await axios.post(`${API_BASE}/api/user/check`);
-    } catch (error) {
-      console.log(error.response.data.message);
+    // 如果有拿到 token 再帶入headers   
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = token; // 修改實體建立時所指派的預設配置（登入成功後，API請求都會自動帶上token）
     }
-  }
+    
+    // 檢查管理員權限
+    const checkAdmin = async() => {
+      try {
+        const res = await axios.post(`${API_BASE}/api/user/check`);
+        setIsAuth(true);
+        getProducts(); // 載入產品資料
+      } catch (error) {
+        console.log(error.response.data.message);
+      }
+    }
+
+    checkAdmin();
+  }, [])
 
   // 串接產品列表 API
   const getProducts = async() => {
@@ -99,7 +110,6 @@ function App() {
       (<div className="container">
         <div className="row mt-5">
             <div className="col-md-6">
-              <button type="button" className="btn btn-danger mb-5" onClick={() => checkLogin()}>確認是否登入</button>
               <h2>產品列表</h2>
               <table className="table">
                 <thead>
