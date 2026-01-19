@@ -222,7 +222,7 @@ function App() {
       axios.defaults.headers.common['Authorization'] = token; // 修改實體建立時所指派的預設配置（登入成功後，API請求都會自動帶上token）
     }
 
-    // 綁定 modal 到 dom 元素
+    // 初始化 Bootstrap Modal
     productModalRef.current = new bootstrap.Modal('#productModal', {
       keyboard: false
     })
@@ -237,7 +237,7 @@ function App() {
     });
     
     // 初始化搭配useEffect串接登入驗證 API
-    // 檢查管理員權限
+    // 檢查管理員權限並載入資料
     const checkAdmin = async() => {
       try {
         await axios.post(`${API_BASE}/api/user/check`);
